@@ -90,6 +90,8 @@ var fs = require('fs');
 var fileName = "classify.txt";
 var devastator = new Devastator();
 var intervalTime = 6000;
+var rightLeftTime = 500;
+var forwardTime = 1000;
 
 function navigate() {
 console.log("navigate");
@@ -104,7 +106,7 @@ console.log("left");
         setTimeout(function(){
           devastator.left(0);
           devastator.forward(255);
-          setTimeout(function(){devastator.forward(0);}, 300);
+          setTimeout(function(){devastator.forward(0);}, rightLeftTime);
         }, 200);
         setTimeout(navigate, intervalTime);
         break;
@@ -114,14 +116,14 @@ console.log("right");
         setTimeout(function(){
           devastator.right(0);
           devastator.forward(255);
-          setTimeout(function(){devastator.forward(0);}, 300);
+          setTimeout(function(){devastator.forward(0);}, rightLeftTime);
         }, 200);
         setTimeout(navigate, intervalTime);
         break;
       case "center":
 console.log("center");
         devastator.forward(255);
-        setTimeout(function(){devastator.forward(0);}, 500);
+        setTimeout(function(){devastator.forward(0);}, forwardTime);
         setTimeout(navigate, intervalTime);
         break;
       case "none":
