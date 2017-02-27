@@ -9,9 +9,9 @@ Moter2 Speed               0xC2    speed value
 servo control              0xEx    duty
 */
 
-function Motor(motor) {
+function Motor(motor, i2c) {
   var m = require('mraa'); //require mraa
-  this.i2c = new m.I2c(1);
+  this.i2c = new m.I2c(i2c);
   this.i2c.address(0x04); // atmega i2c address
   if(motor === 1) {
     this.motor = 0xc1;	
@@ -54,8 +54,8 @@ Motor.prototype.reverse = function() {
 }
 
 function Devastator() {
-  this.motor1 = new Motor(1);
-  this.motor2 = new Motor(2);
+  this.motor1 = new Motor(1, 0);
+  this.motor2 = new Motor(2, 1);
 }
 
 Devastator.prototype.forward = function(speed) {
@@ -86,71 +86,35 @@ Devastator.prototype.reverse = function(speed) {
   this.motor2.speed(speed);
 }
 
-var fs = require('fs');
-var fileName = "classify.txt";
+/*
+if(process.argv.length < 4) {
+  console.log("Usage:");
+  console.log(process.argv[1]+" {forward|reverse|right|left} speed duration");
+  console.log("  where speed is 1-255");
+  console.log("  where duration is in milliseconds");
+  process.exit(0);
+}
+
 var devastator = new Devastator();
-var intervalTime = 1500;
-var forwardTime = 1500;
-var turnTime = 300;
-var ranOnce = false;
-
-function navigate() {
-console.log("navigate");
-if(ranOnce) {
-process.exit(0);
+switch(process.argv[2]) {
+  case "forward":
+    devastator.forward(process.argv[3]);
+    setTimeout(function(){devastator.forward(0);}, process.argv[4]);
+    break;
+  case "left":
+    devastator.left(process.argv[3]);
+    setTimeout(function(){devastator.left(0);}, process.argv[4]);
+    break;
+  case "right":
+    devastator.right(process.argv[3]);
+    setTimeout(function(){devastator.right(0);}, process.argv[4]);
+    break;
+  case "reverse":
+    devastator.reverse(process.argv[3], process.argv[4]);
+    setTimeout(function(){devastator.reverse(0);}, process.argv[4]);
+    break;
+  default:
+    console.log("unknown arguments");
+    break;
 }
-fs.readFile(fileName, 'utf8', function(err, data) {  
-data=data.trim();
-console.log("data="+data);
-    if (err) throw err;
-    switch(data) {
-      case "left":
-console.log("left");
-        devastator.forward(0);
-        setTimeout(navigate, intervalTime);
-        break;
-/*
-console.log("left");
-        devastator.left(255);
-        setTimeout(function(){
-          devastator.left(0);
-          devastator.forward(255);
-          setTimeout(function(){devastator.forward(0);}, turnTime);
-        }, 200);
-        setTimeout(navigate, intervalTime);
-        break;
 */
-      case "right":
-console.log("right");
-        devastator.forward(255);
-        setTimeout(function(){devastator.forward(0);}, forwardTime);
-        setTimeout(navigate, intervalTime);
-        break;
-/*
-        devastator.right(255);
-        setTimeout(function(){
-          devastator.right(0);
-          devastator.forward(255);
-          setTimeout(function(){devastator.forward(0);}, turnTime);
-        }, 200);
-        setTimeout(navigate, intervalTime);
-        break;
-*/
-      case "center":
-console.log("center");
-        devastator.forward(255);
-        setTimeout(function(){devastator.forward(0);}, forwardTime);
-        ranOnce=true;
-        setTimeout(navigate, intervalTime);
-        break;
-      case "none":
-      default:
-console.log("none");
-        devastator.forward(0);
-        setTimeout(navigate, intervalTime);
-        break;
-    }
-});
-}
-
-setTimeout(navigate, intervalTime);
